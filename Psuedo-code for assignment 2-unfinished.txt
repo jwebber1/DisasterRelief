@@ -1,0 +1,38 @@
+Psuedo-code for assignment 2				1/30/2018
+
+/*
+The agency needs a program that takes a 5-digit zip code and a distance in miles.  The program should produce a list of places within the given distance of the specified zip code along with the total population and the total number of housing units.    For example, if given a zip code of 64507 and a distance of 300, the program would give a list of all places within 300 miles of St. Joseph.
+
+Each place should be listed only once, even if it has several zip codes.  For each place be sure to list the place name, state, the total population, and the total number of housing units.  It should also list the distance from the source in both kilometers and miles.  If there are several zip codes for a place, use any of the distances you calculated.
+
+Obviously this program is going to miss places outside the US if you give a latitude and longitude near a US border.  We can't help that at this point.
+
+Also, you may find that at the borders a place may be partially in or partially out.  Don't sweat that too much.  It is just fine if you only calculate the parts that are within the specified distance.   In practice during most disasters the borders of the affected areas are always a bit fuzzy.
+
+The website https://www.movable-type.co.uk/scripts/latlong.html contains formulas for calculating distances between two points based on the haversine method.
+
+When you are doing places, make sure you don't combine two cities in different states.  If you search for cities with 200 miles of St. Louis you should have both Springfield, MO and Springfield, IL listed as different places.
+*/
+
+import java.util.*;
+
+class Disaster {
+	public static void main(String[] args){
+		
+		open connection to database;
+		Scanner input = new Scanner(System.in);
+		int zip = input.nextInt();
+		
+		
+		
+		
+		
+	}
+	public String getCities(String zip, int miles) {
+		take zip and miles and find cities in radius
+		int cities = ___;
+		return cities;
+	}
+	public 
+}
+
