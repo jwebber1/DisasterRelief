@@ -9,6 +9,7 @@ public class DET_02_DisasterRelief {
     public static void main(String[] args) {
         //create scanner for user input of zip code and miles
         Scanner scan = new Scanner(System.in);
+        
         System.out.print("Please enter 5-digit zip code: ");
         String zipCode = scan.next();
 
@@ -28,12 +29,10 @@ public class DET_02_DisasterRelief {
             }
         }
 
-        /*
         System.out.print("Please enter miles from disaster wanted: ");
         double distInMiles = scan.nextDouble();
-        double distInKilos = distInMiles * 1.60934;
-        System.out.println(distInKilos);
-        */
+
+
 
         //credentials to use to access the database
         String host = "jdbc:mysql://turing.cs.missouriwestern.edu:3306/misc";
@@ -41,14 +40,30 @@ public class DET_02_DisasterRelief {
         String password= "age126";
 
         //string to be fed into the database query
-        String queryString1 = "SELECT city, state, locationtype, zipcode, zipcodetype, lat, `long` FROM zips2 where zipcode = "+zipCode+" AND locationtype = 'PRIMARY' LIMIT 25";
+        String queryStringAll = "SELECT city, state, locationtype, zipcode, taxreturnsfiled, lat, `long` FROM zips2 where locationtype = 'PRIMARY'";
+        String queryStringForZip = "SELECT zipcode, lat, `long` FROM zips2 where locationtype = 'PRIMARY' AND zipcode = "+zipCode;
+
+
         try {
             //create a connection to the database
             connection = DriverManager.getConnection(host, user, password);
 
-            //create a statement, set it to be the above queryString1
+            double startLat = 0;
+            double startLong = 0;
+
             statement = connection.createStatement();
-            rsSet = statement.executeQuery(queryString1);
+            rsSet = statement.executeQuery(queryStringForZip);
+
+            while(rsSet.next()) {
+                startLat = rsSet.getDouble("lat");
+                startLong = rsSet.getDouble("long");
+            }
+            //System.out.println(startLat);
+            //System.out.println(startLong);
+
+            //create a statement, set it to be the above queryStringAll
+            statement = connection.createStatement();
+            rsSet = statement.executeQuery(queryStringAll);
 
             while(rsSet.next()){
                 //System.out.println("k");
@@ -57,14 +72,18 @@ public class DET_02_DisasterRelief {
                 String state = rsSet.getString("state");
                 String locationtype = rsSet.getString("locationtype");
                 String zipcode = rsSet.getString("zipcode");
-                String zipcodetype = rsSet.getString("zipcodetype");
+                int taxreturnsfiled = rsSet.getInt("taxreturnsfiled");
                 double lat = rsSet.getDouble("lat");
                 double lon = rsSet.getDouble("long");
-                Place newPlace = new Place(city,state,locationtype,zipcode,zipcodetype,lat,lon);
-                System.out.println(newPlace);
+                Place newPlace = new Place(city,state,locationtype,zipcode,taxreturnsfiled,lat,lon);
+                if(haversine.totDistance(startLat, startLong, lat, lon)<distInMiles) {
+                    System.out.println(newPlace + "\td= " + haversine.totDistance(startLat, startLong, lat, lon));
+                }
+
 
             }
 
+            //System.out.println(haversine.totDistance(40, -90, 41, -74));
             connection.close();
         } catch (SQLException e) {
             System.out.println("Trouble accessing information in the database");
@@ -79,16 +98,16 @@ class Place {
     String state;
     String locationType;
     String zipCode;
-    String zipCodeType;
+    int taxreturnsfiled;
     double latitude;
     double longitude;
 
-    public Place(String city, String state, String locationType, String zipCode, String zipCodeType, double latitude, double longitude) {
+    public Place(String city, String state, String locationType, String zipCode, int taxreturnsfiled, double latitude, double longitude) {
         this.city = city;
         this.state = state;
         this.locationType = locationType;
         this.zipCode = zipCode;
-        this.zipCodeType = zipCodeType;
+        this.taxreturnsfiled = taxreturnsfiled;
         this.latitude = latitude;
         this.longitude = longitude;
     }
@@ -125,12 +144,12 @@ class Place {
         this.zipCode = zipCode;
     }
 
-    public String getZipCodeType() {
-        return zipCodeType;
+    public int getZipCodeType() {
+        return taxreturnsfiled;
     }
 
-    public void setZipCodeType(String zipCodeType) {
-        this.zipCodeType = zipCodeType;
+    public void setZipCodeType(int taxreturnsfiled) {
+        this.taxreturnsfiled = taxreturnsfiled;
     }
 
     public double getLatitude() {
@@ -156,9 +175,26 @@ class Place {
                 ", state='" + state + '\'' +
                 ", locationType='" + locationType + '\'' +
                 ", zipCode='" + zipCode + '\'' +
-                ", zipCodeType='" + zipCodeType + '\'' +
+                ", taxreturnsfiled='" + taxreturnsfiled + '\'' +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
                 '}';
+    }
+}
+
+class haversine {
+    final static double eRadiusKm = 6371.0;
+    public static double totDistance(double startLat, double startLong, double endLat, double endLong){
+        double deltaLat = Math.toRadians(endLat-startLat);
+        double deltaLong = Math.toRadians(endLong-startLong);
+
+        startLat = Math.toRadians(startLat);
+        endLat = Math.toRadians(endLat);
+
+        double tempA = Math.pow(Math.sin(deltaLat/2.0), 2.0)+Math.cos(startLat)*Math.cos(endLat)*Math.pow(Math.sin(deltaLong/2.0), 2.0);
+        double tempC = 2.0*Math.atan2(Math.sqrt(tempA),Math.sqrt(1.0-tempA));
+
+
+        return eRadiusKm * tempC *.621371;
     }
 }
